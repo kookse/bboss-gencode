@@ -48,9 +48,11 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 	public @ResponseBody String addDatasource(Datasource datasource) {
 		// 控制器
 		try {
+			if(StringUtil.isEmpty(datasource.getDbname()))
+				return "数据源名称为空，请设置要添加的数据源名称!";
 			if("gencode".equals(datasource.getDbname()))
 			{
-				throw new java.lang.IllegalArgumentException("gencode为系统预留数据源名称，从修改为其他数据源名称!");
+				return ("gencode为系统预留数据源名称，从修改为其他数据源名称!");
 			}
 			Datasource olddatasource = this.gencodeService.getDatasource(datasource.getDbname());
 			if (olddatasource == null) {
@@ -76,9 +78,11 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 
 	public @ResponseBody String deleteDatasource(String dbname) {
 		try {
+			if(StringUtil.isEmpty(dbname))
+				return "数据源名称为空，请选择要删除的数据源!";
 			if("gencode".equals(dbname))
 			{
-				throw new java.lang.IllegalArgumentException("gencode为系统预留数据源名称，不能删除!");
+				return ("gencode为系统预留数据源名称，不能删除!");
 			}
 			gencodeService.deleteDatasource(dbname);
 			DBUtil.stopPool(dbname);
@@ -86,7 +90,12 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 		} catch (DatasourceException e) {
 			log.error("delete Datasource failed:", e);
 			return StringUtil.formatBRException(e);
-		} catch (Throwable e) {
+		} 
+		 catch (RuntimeException e) {
+				log.error("delete Datasource failed:", e);
+				return StringUtil.formatBRException(e);
+			}
+		catch (Throwable e) {
 			log.error("delete Datasource failed:", e);
 			return StringUtil.formatBRException(e);
 		}
@@ -152,6 +161,8 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 
 	public String getGencode(String id, ModelMap model) throws GencodeException {
 		try {
+			if(id == null || id.equals(""))
+				return "path:getGencode";
 			Gencode gencode = gencodeService.getGencode(id);
 			model.addAttribute("gencode", gencode);
 			return "path:getGencode";
@@ -294,11 +305,12 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 		List<FieldInfo> fields = Util.getSimpleFields(tableMeta);
 		model.addAttribute("fileexist", false);
 		model.addAttribute("fields", fields);
+		model.addAttribute("fieldlens", fields != null?fields.size():0);
 		return "path:tableconfig";
 	}
 
 	public String tablereconfig(String gencodeid, ModelMap model) {
-		if (gencodeid == null)
+		if (gencodeid == null || gencodeid.equals(""))
 			return "path:tableconfig";
 		Gencode gencode = gencodeService.getGencode(gencodeid);
 		if (gencode == null)
@@ -326,6 +338,7 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 		if(!StringUtil.isEmpty(org.frameworkset.gencode.core.GencodeServiceImpl.DEFAULT_SOURCEPATH ))
 			model.addAttribute("DEFAULT_SOURCEPATH",  org.frameworkset.gencode.core.GencodeServiceImpl.DEFAULT_SOURCEPATH );
 		model.addAttribute("fields", fields);
+		model.addAttribute("fieldlens", fields != null?fields.size():0);
 		model.addAttribute("gencodeid", gencodeid);
 
 		model.addAttribute("controlparams", controlInfo);
@@ -441,6 +454,8 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 	}
 
 	private void handleSortFields(GencodeServiceImpl gencodeService, List<FieldInfo> fields) {
+		SortField defaultSortField = null;
+		SortField defaultSortfieldInfo = null;
 		for (int i = 0; fields != null && i < fields.size(); i++) {
 			FieldInfo fieldInfo = fields.get(i);
 			if (fieldInfo.getSfield() == 1) {
@@ -448,14 +463,30 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 				// id.setColumnname(fieldInfo.getColumnname());
 				id.setDesc(fieldInfo.getStype() == 1);
 				this.convertField(gencodeService, fieldInfo, id, Util.other);
-				if (i == 0) {
-					id.setDefaultSortField(true);
-					gencodeService.setDefaultSortField(id);
+				if(defaultSortfieldInfo == null)
+					defaultSortfieldInfo = id;
+				if(fieldInfo.getDefaultsfield() == 1)
+				{
+					defaultSortField = id;
 				}
+//				if (i == 0) {
+//					id.setDefaultSortField(true);
+//					gencodeService.setDefaultSortField(id);
+//				}
 
 				gencodeService.addSortField(id);
 			}
 		}
+		
+		if (defaultSortField != null) {
+			gencodeService.setDefaultSortField(defaultSortField);
+		}
+		else if(defaultSortfieldInfo != null) 
+		{
+			defaultSortfieldInfo.setDefaultSortField(true);
+			gencodeService.setDefaultSortField(defaultSortfieldInfo);
+		}
+
 	}
 
 	private String extendType(String type) {
@@ -920,6 +951,7 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 		moduleMetaInfo.setCompany(controlInfo.getCompany());// 公司信息
 		moduleMetaInfo.setVersion(controlInfo.getVersion());// 版本信息
 		moduleMetaInfo.setJsppath(controlInfo.getJsppath());
+		moduleMetaInfo.setIgnoreEntityFirstToken(controlInfo.getIgnoreEntityFirstToken() == 1);
 		SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		String date = format.format(new Date());
 		moduleMetaInfo.setDate(date);// 指定日期
@@ -930,6 +962,7 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 		gencodeService.setExportExcel(gencodeService.getExcelVersion() != -1);
 		gencodeService.setTheme(controlInfo.getTheme());// 设置默认主题风格
 		gencodeService.setModuleMetaInfo(moduleMetaInfo);
+		gencodeService.setControlInfo(controlInfo);
 
 		// 处理主键信息
 		handlePK(gencodeService, fields, controlInfo);
@@ -962,8 +995,17 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 		handleEditorFields(gencodeService, fields);
 		handleViewFields(gencodeService, fields);
 		handleEntityFields(gencodeService, fields);
-		gencodeService.genCode();// 执行代码生成逻辑
-		ret.put("result", "success");
+		try {
+			gencodeService.genCode();// 执行代码生成逻辑
+			ret.put("result", "success");
+		} catch (IllegalArgumentException e) {
+			ret.put("result", e.getMessage());
+			
+		}
+		 catch (Exception e) {
+				ret.put("result", StringUtil.formatBRException(e));
+				
+			}
 		return ret;
 
 	}
@@ -1098,6 +1140,8 @@ public class GencodeController implements org.frameworkset.spi.InitializingBean,
 	 */
 	public String viewCode(String genid, ModelMap model)
 	{
+		if(genid == null || genid.equals(""))
+			return null;
 		model.addAttribute("genid",genid);
 		Gencode gencode = gencodeService.getGencode(genid);
 		if (gencode == null) {

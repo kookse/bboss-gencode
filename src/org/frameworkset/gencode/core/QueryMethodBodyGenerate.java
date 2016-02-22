@@ -24,6 +24,9 @@ public class QueryMethodBodyGenerate implements MethodBodyGenerate {
 		 context.put("conditionFields", gencodeService.getConditions());
 		 context.put("needcondition", gencodeService.needcondition());
 		 context.put("serviceParamName", gencodeService.getServiceParamName());
+		 context.put("pagineWithDBRownumberOver", gencodeService.isPagineWithDBRownumberOver());
+		 context.put("dbname", gencodeService.getDaoDBName());
+		 context.put("needsort", gencodeService.needsort());
 		 String body = GencodeServiceImpl.writetostring(context,addmethodbodytempalte,encodecharset);
 		 method.setBody(body);
 		

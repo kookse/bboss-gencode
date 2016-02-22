@@ -5,7 +5,7 @@
 <div id="ajax-modal" class="modal  container fade" tabindex="-1">
 </div>
 <a id="downfile" target="_blank" />
-<div class="portlet box yellow">
+<div class="portlet">
 	<div class="portlet-title">
 		<div class="caption">
 			<i class="fa fa-gift"></i> 数据源${dbname }-表${tableName } 配置
@@ -136,7 +136,21 @@
 									</div>
 								</div>
 								<div class="col-md-6">
-									<div class="form-group"></div>
+									<div class="form-group"><label class="control-label col-md-3">表名前缀截取</label>
+										<div class="col-md-9">
+											<div class="radio-list">
+																			<pg:case colName="ignoreEntityFirstToken">
+																				<label class="radio-inline"><input
+																					type="radio" name="ignoreEntityFirstToken"
+																					id="ignoreEntityFirstToken" value="1"
+																					<pg:equal value="1">checked</pg:equal>>是</label>
+																				<label class="radio-inline"><input
+																					type="radio" name="ignoreEntityFirstToken"  
+																					id="ignoreEntityFirstToken" value="0"
+																					<pg:equal value="0">checked</pg:equal>>否</label>
+																			</pg:case>
+																		</div>
+										</div></div>
 								</div>
 								<!--/span-->
 
@@ -171,7 +185,8 @@
 													<!-- 													<option value="mobile" -->
 													<!-- 														<pg:equal value="default">mobile</pg:equal>>mobile</option> -->
 												</pg:case>
-											</select>
+											</select><span
+												class="help-block"><font color="blue">default:对应bboss平台通用界面风格  ，集成到bboss平台中运行<br> common：对应bboss通用风格模板，生成的代码与平台无关，只需要bboss框架，集成到<a href="https://github.com/bbossgroups/bboss-gencode/tree/master/gencode" target="_blank"><font color="red">gencode</font></a>子目录对应的eclipse工程中即可运行</font></span>
 										</div>
 
 									</div>
@@ -252,6 +267,48 @@
 												class="form-control" placeholder="主键名称，没有不填"
 												value="<pg:cell colName="pkname"/>"> <span
 												class="help-block"><font color="blue">对应于tableinfo表中的table_name字段
+											</font></span>
+										</div>
+									</div>
+								</div>
+
+								<!--/span-->
+
+								<!--/span-->
+							</div>
+							
+							<div class="row">
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="control-label col-md-3">分页机制</label>
+										<div class="col-md-9">
+											<div class="radio-list">
+												<pg:case colName="pagineWithDBRownumberOver">
+													<label class="radio-inline"><input
+														type="radio" name="pagineWithDBRownumberOver"
+														id="pagineWithDBRownumberOver" value="0"
+														<pg:false>checked</pg:false>> 默认分页机制</label>
+													<label class="radio-inline"><input
+														type="radio" name="pagineWithDBRownumberOver"
+														id="pagineWithDBRownumberOver" value="1"
+														<pg:true>checked</pg:true>> Rownumber Over(Order By)</label>
+												</pg:case>
+											</div><span
+												class="help-block"><font color="green">【默认分页机制】适用数据库oracle，mysql，maradb，sqlite，postgres 【Rownumber Over(Order By)】适用数据库oracle，mysql，maradb，sqlite，postgres，derby，mssql server2005/2008，db2
+											</font></span>
+										</div>
+
+
+									</div>
+								</div>
+								<div class="col-md-6">
+									<div class="form-group">
+										<label class="control-label col-md-3">指定DB操作数据源</label>
+										<div class="col-md-9">
+											<input id="daoDBName" name="daoDBName" type="text"
+												class="form-control" placeholder="${dbname }"
+												value="<pg:cell colName="daoDBName"/>"> <span
+												class="help-block"><font color="blue">必须在poolman.xml文件中配置对应名称的数据源
 											</font></span>
 										</div>
 									</div>
@@ -438,7 +495,7 @@
 																	</div>
 																</div>
 															</td>
-															<td><div class="form-group">
+															<td  ><div class="form-group">
 																	<label class="control-label col-md-3">数字格式</label>
 																	<div class="col-md-9">
 																		<select class="form-control  input-medium select2me"
@@ -457,18 +514,18 @@
 																	</div>
 																</div></td>
 															<td><div class="form-group">
-																	<label class="control-label col-md-3">日期范围查询</label>
+																	<label class="control-label col-md-3">类型校验</label>
 																	<div class="col-md-9">
 																		<div class="radio-list">
-																			<pg:case colName="daterange">
+																			<pg:case colName="required">
 																				<label class="radio-inline"><input
-																					type="radio" name="<pg:rowid/>_daterange"
-																					id="<pg:rowid/>_daterange" value="1"
-																					<pg:equal value="1">checked</pg:equal>>是</label>
+																					type="radio" name="<pg:rowid/>_required"
+																					id="<pg:rowid/>_required" value="1"
+																					<pg:equal value="1">checked</pg:equal>>是 </label>
 																				<label class="radio-inline"><input
-																					type="radio" name="<pg:rowid/>_daterange"
-																					id="<pg:rowid/>_daterange" value="0"
-																					<pg:equal value="0">checked</pg:equal>>否</label>
+																					type="radio" name="<pg:rowid/>_required"
+																					id="<pg:rowid/>_required" value="0"
+																					<pg:equal value="0">checked</pg:equal>>否 </label>
 																			</pg:case>
 																		</div>
 																	</div>
@@ -476,7 +533,7 @@
 
 														</tr>
 														<tr>
-															<td><div class="form-group">
+														<td><div class="form-group">
 																	<label class="control-label col-md-3">查询条件</label>
 																	<div class="col-md-9">
 																		<div class="radio-list">
@@ -510,7 +567,30 @@
 																		</div>
 																	</div>
 																</div></td>
-															<td>
+															<td><div class="form-group">
+																	<label class="control-label col-md-3">范围查询</label>
+																	<div class="col-md-9">
+																		<div class="radio-list">
+																			<pg:case colName="daterange">
+																				<label class="radio-inline"><input
+																					type="radio" name="<pg:rowid/>_daterange"
+																					id="<pg:rowid/>_daterange" value="1"
+																					<pg:equal value="1">checked</pg:equal>>是</label>
+																				<label class="radio-inline"><input
+																					type="radio" name="<pg:rowid/>_daterange"
+																					id="<pg:rowid/>_daterange" value="0"
+																					<pg:equal value="0">checked</pg:equal>>否</label>
+																			</pg:case>
+																		</div>
+																	</div>
+																</div></td>
+															
+															
+
+														</tr>
+														<tr>
+
+														<td>
 																<div class="form-group">
 																	<label class="control-label col-md-3">排序字段</label>
 																	<div class="col-md-9">
@@ -521,7 +601,7 @@
 																					id="<pg:rowid/>_sfield" value="1"
 																					<pg:equal value="1">checked</pg:equal>>是</label>
 																				<label class="radio-inline"><input
-																					type="radio" name="<pg:rowid/>_sfield"
+																					type="radio" name="<pg:rowid/>_sfield" curpos="<pg:rowid/>"
 																					id="<pg:rowid/>_sfield" value="0"
 																					<pg:equal value="0">checked</pg:equal>>否</label>
 																			</pg:case>
@@ -529,9 +609,24 @@
 																	</div>
 																</div>
 															</td>
-
-														</tr>
-														<tr>
+															<td>
+															 
+																<div class="form-group">
+																	<label class="control-label col-md-3">默排字段 </label>																	
+																	<div class="col-md-9"><div class="radio-list">
+																				<pg:case colName="defaultsfield">
+																					<label class="radio-inline"><input curpos="<pg:rowid/>"
+																						type="radio" name="<pg:rowid/>_defaultsfield"
+																						id="<pg:rowid/>_defaultsfield" value="1"
+																						<pg:equal value="1">checked</pg:equal>>是</label>
+																					
+																				</pg:case>
+																			</div>
+																	
+																</div>
+															</div>	
+															</td>
+															
 															<td><div class="form-group">
 																	<label class="control-label col-md-3">排序方式</label>
 																	<div class="col-md-9">
@@ -549,6 +644,9 @@
 																		</div>
 																	</div>
 																</div></td>
+														</tr>
+														<tr>
+															
 															<td><div class="form-group">
 																	<label class="control-label col-md-3">列表字段</label>
 																	<div class="col-md-9">
@@ -566,10 +664,7 @@
 																			value="<pg:cell colName="editcontrolParams" defaultValue="显示, 编辑"/>">
 																	</div>
 																</div></td>
-
-														</tr>
-														<tr>
-															<td><div class="form-group">
+																<td><div class="form-group">
 																	<label class="control-label col-md-3">添加控制</label>
 																	<div class="col-md-9">
 																		<input type="hidden" id="addcontrolParams"
@@ -578,6 +673,9 @@
 																			value="<pg:cell colName="addcontrolParams" defaultValue="显示"/>">
 																	</div>
 																</div></td>
+														</tr>
+														<tr>
+															
 															<td><div class="form-group">
 																	<label class="control-label col-md-3">查看控制</label>
 																	<div class="col-md-9">
@@ -587,7 +685,7 @@
 																			value="<pg:cell colName="viewcontrolParams" defaultValue="显示"/>"
 																	</div>
 																</div></td>
-															<td><div class="form-group">
+															<td colspan="2"><div class="form-group">
 																	<label class="control-label col-md-3">默认值</label>
 																	<div class="col-md-9">
 																		<input type="text"
@@ -600,23 +698,7 @@
 														<tr>
 
 
-															<td><div class="form-group">
-																	<label class="control-label col-md-3">类型校验</label>
-																	<div class="col-md-9">
-																		<div class="radio-list">
-																			<pg:case colName="required">
-																				<label class="radio-inline"><input
-																					type="radio" name="<pg:rowid/>_required"
-																					id="<pg:rowid/>_required" value="1"
-																					<pg:equal value="1">checked</pg:equal>>是 </label>
-																				<label class="radio-inline"><input
-																					type="radio" name="<pg:rowid/>_required"
-																					id="<pg:rowid/>_required" value="0"
-																					<pg:equal value="0">checked</pg:equal>>否 </label>
-																			</pg:case>
-																		</div>
-																	</div>
-																</div></td>
+															
 															<td>
 																<div class="form-group">
 																	<label class="control-label col-md-3">显示长度</label>
@@ -627,7 +709,7 @@
 																	</div>
 																</div>
 															</td>
-															<td><div class="form-group">
+															<td colspan="2"><div class="form-group">
 																	<label class="control-label col-md-3">替换串</label>
 																	<div class="col-md-9">
 																		<input type="text" placeholder="replace"
@@ -725,7 +807,7 @@
 </div>
 <script>
 	jQuery(document).ready(function() {
-		FormValidation.inittableconfig();
+		FormValidation.inittableconfig(${fieldlens});
 		UIExtendedModals.init();
 		TableAdvanced.initfieldtablelist();
 		
